@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TextRank Summarizer</title>
+    <style>
+        body { font-family: Arial; margin: 40px; }
+        textarea { width: 100%; height: 150px; }
+        input[type="text"], input[type="number"] { width: 100px; }
+    </style>
+</head>
+<body>
+    <h2>TextRank Summarizer (SaaS)</h2>
+    <form method="POST" enctype="multipart/form-data">
+        <label>Text (or upload PDF):</label><br>
+        <textarea name="text" placeholder="Paste your text here...">{{ request.form.text if request.method == 'POST' else '' }}</textarea><br><br>
+
+        <label>Upload PDF:</label>
+        <input type="file" name="file" accept=".pdf"><br><br>
+
+        <label>Sentences:</label>
+        <input type="number" name="top_n" value="{{ request.form.top_n if request.method == 'POST' else 1 }}"><br><br>
+
+        <label>Damping Factor:</label>
+        <input type="text" name="damping" value="{{ request.form.damping if request.method == 'POST' else 0.85 }}"><br><br>
+
+        <label>Similarity Threshold:</label>
+        <input type="text" name="threshold" value="{{ request.form.threshold if request.method == 'POST' else 0.1 }}"><br><br>
+
+        <input type="submit" value="Summarize">
+    </form>
+
+    {% if error %}
+    <div style="color: red; border: 1px solid red; padding: 10px; background: #ffe6e6;">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    {% if summary %}
+    <hr>
+    <h3>User Input:</h3>
+    <div style="border: 1px solid #ccc; padding: 10px; background: #f9f9f9;">
+        {{ request.form.text.replace('\n', ' ') | safe }}
+    </div>
+
+    <h3>User Parameters:</h3>
+    <ul>
+        <li>Sentences: {{ request.form.top_n }}</li>
+        <li>Damping Factor: {{ request.form.damping }}</li>
+        <li>Similarity Threshold: {{ request.form.threshold }}</li>
+    </ul>
+
+    <h3>Generated Summary:</h3>
+    <p>{{ summary }}</p>
+
+    <h4>Evaluation Metrics:</h4>
+    <ul>
+        {% if metrics.semantic_similarity %}
+            <li>Semantic Similarity: {{ metrics.semantic_similarity|round(4) }}</li>
+        {% endif %}
+        {% if metrics.rouge1_f1 %}
+            <li>ROUGE-1 F1: {{ metrics.rouge1_f1|round(4) }}</li>
+            <li>ROUGE-2 F1: {{ metrics.rouge2_f1|round(4) }}</li>
+            <li>ROUGE-L F1: {{ metrics.rougeL_f1|round(4) }}</li>
+        {% endif %}
+        <li>Compression Ratio: {{ metrics.compression_ratio|round(4) }}</li>
+    </ul>
+    {% endif %}
+</body>
+</html>
