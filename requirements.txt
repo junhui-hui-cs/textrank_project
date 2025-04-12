@@ -1,0 +1,13 @@
+flask
+networkx
+numpy
+rouge-score
+sentence-transformers
+torch
+pymupdf
+nltk
+scikit-learn
+networkx 
+numpy
+gunicorn
+nltk
