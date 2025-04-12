@@ -9,12 +9,11 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize, sent_tokenize
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
-
-nltk.download('punkt')
-nltk.download('stopwords')
+import os
 
 # Remove stopwords and tokenize
 def preprocess_text(text):
+    nltk.data.path.append(os.path.join(os.path.dirname(__file__), 'nltk_data'))
     stop_words = set(stopwords.words('english'))
     # Tokenize sentences and words
     sentences = sent_tokenize(text)
