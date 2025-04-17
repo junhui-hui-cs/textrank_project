@@ -11,3 +11,4 @@ networkx
 numpy
 gunicorn
 nltk
+flask-login
