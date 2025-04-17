@@ -1,69 +1,130 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TextRank Summarizer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { font-family: Arial; margin: 40px; }
-        textarea { width: 100%; height: 150px; }
-        input[type="text"], input[type="number"] { width: 100px; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        .container {
+            max-width: 900px;
+            margin-top: 50px;
+        }
+        .form-control, .form-select, .card, .alert {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            border-color: #333;
+        }
+        .form-control::placeholder {
+            color: #aaa;
+        }
+        .form-control:focus {
+            background-color: #1e1e1e;
+            color: #fff;
+            border-color: #007bff;
+        }
+        .card {
+            margin-top: 2rem;
+            border-radius: 0.75rem;
+        }
+        textarea {
+            resize: vertical;
+        }
+        .navbar {
+            margin-bottom: 30px;
+        }
     </style>
 </head>
 <body>
-    <h2>TextRank Summarizer (SaaS)</h2>
-    <form method="POST" enctype="multipart/form-data">
-        <label>Text (or upload PDF):</label><br>
-        <textarea name="text" placeholder="Paste your text here...">{{ request.form.text if request.method == 'POST' else '' }}</textarea><br><br>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">TextRank Summarizer</a>
+            <div class="d-flex">
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-light">Logout</a>
+            </div>
+        </div>
+    </nav>
+    
 
-        <label>Upload PDF:</label>
-        <input type="file" name="file" accept=".pdf"><br><br>
+    <div class="container">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h4 class="card-title mb-4">Summarize Your Text</h4>
+                <form method="POST" enctype="multipart/form-data">
+                    <label class="form-label">Text (or upload PDF):</label>
+                    <textarea class="form-control" name="text" placeholder="Paste your text here..." rows="6"></textarea>
 
-        <label>Sentences:</label>
-        <input type="number" name="top_n" value="{{ request.form.top_n if request.method == 'POST' else 1 }}"><br><br>
 
-        <label>Damping Factor:</label>
-        <input type="text" name="damping" value="{{ request.form.damping if request.method == 'POST' else 0.85 }}"><br><br>
+                    <label class="form-label">Upload PDF:</label>
+                    <input class="form-control" type="file" name="file" accept=".pdf">
 
-        <label>Similarity Threshold:</label>
-        <input type="text" name="threshold" value="{{ request.form.threshold if request.method == 'POST' else 0.1 }}"><br><br>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label class="form-label">Sentences:</label>
+                            <input type="number" class="form-control" name="top_n" value="{{ request.form.top_n if request.method == 'POST' else 1 }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Damping Factor:</label>
+                            <input type="text" class="form-control" name="damping" value="{{ request.form.damping if request.method == 'POST' else 0.85 }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Similarity Threshold:</label>
+                            <input type="text" class="form-control" name="threshold" value="{{ request.form.threshold if request.method == 'POST' else 0.1 }}">
+                        </div>
+                    </div>
 
-        <input type="submit" value="Summarize">
-    </form>
+                    <div class="d-grid">
+                        <input class="btn btn-primary" type="submit" value="Summarize">
+                    </div>
+                </form>
+            </div>
+        </div>
 
-    {% if error %}
-    <div style="color: red; border: 1px solid red; padding: 10px; background: #ffe6e6;">
-        {{ error }}
-    </div>
-    {% endif %}
-
-    {% if summary %}
-    <hr>
-    <h3>User Input:</h3>
-    <div style="border: 1px solid #ccc; padding: 10px; background: #f9f9f9;">
-        {{ request.form.text.replace('\n', ' ') | safe }}
-    </div>
-
-    <h3>User Parameters:</h3>
-    <ul>
-        <li>Sentences: {{ request.form.top_n }}</li>
-        <li>Damping Factor: {{ request.form.damping }}</li>
-        <li>Similarity Threshold: {{ request.form.threshold }}</li>
-    </ul>
-
-    <h3>Generated Summary:</h3>
-    <p>{{ summary }}</p>
-
-    <h4>Evaluation Metrics:</h4>
-    <ul>
-        {% if metrics.semantic_similarity %}
-            <li>Semantic Similarity: {{ metrics.semantic_similarity|round(4) }}</li>
+        {% if error %}
+        <div class="alert alert-danger mt-4" role="alert">
+            {{ error }}
+        </div>
         {% endif %}
-        {% if metrics.rouge1_f1 %}
-            <li>ROUGE-1 F1: {{ metrics.rouge1_f1|round(4) }}</li>
-            <li>ROUGE-2 F1: {{ metrics.rouge2_f1|round(4) }}</li>
-            <li>ROUGE-L F1: {{ metrics.rougeL_f1|round(4) }}</li>
+
+        {% if summary %}
+        <div class="card mt-4 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">User Input</h5>
+                <p class="card-text" style="white-space: pre-wrap;">{{ request.form.text.replace('\n', ' ') | safe }}</p>
+
+                <h5 class="card-title mt-4">User Parameters</h5>
+                <ul>
+                    <li>Sentences: {{ request.form.top_n }}</li>
+                    <li>Damping Factor: {{ request.form.damping }}</li>
+                    <li>Similarity Threshold: {{ request.form.threshold }}</li>
+                </ul>
+
+                <h5 class="card-title mt-4">Generated Summary</h5>
+                <p class="card-text" style="color: #ffd700;">{{ summary }}</p>
+
+
+                <h5 class="card-title mt-4">Evaluation Metrics</h5>
+                <ul>
+                    {% if metrics.semantic_similarity %}
+                        <li>Semantic Similarity: {{ metrics.semantic_similarity|round(4) }}</li>
+                    {% endif %}
+                    {% if metrics.rouge1_f1 %}
+                        <li>ROUGE-1 F1: {{ metrics.rouge1_f1|round(4) }}</li>
+                        <li>ROUGE-2 F1: {{ metrics.rouge2_f1|round(4) }}</li>
+                        <li>ROUGE-L F1: {{ metrics.rougeL_f1|round(4) }}</li>
+                    {% endif %}
+                    <li>Compression Ratio: {{ metrics.compression_ratio|round(4) }}</li>
+                </ul>
+            </div>
+        </div>
         {% endif %}
-        <li>Compression Ratio: {{ metrics.compression_ratio|round(4) }}</li>
-    </ul>
-    {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
